@@ -18,3 +18,21 @@ export type Character = {
 	url: string;
 	created: string;
 };
+
+export type FetchCharactersAPI = {
+	results: Character[];
+	info: {
+		count: number;
+		pages: number;
+		next: string;
+		prev: string;
+	};
+};
+
+export type CharacterGridProps = {
+	characterList: FetchCharactersAPI;
+};
+
+export type CharacterCardProps = {
+	character: Character;
+};
