@@ -1,25 +1,45 @@
 "use client";
+import {fetchCharacters} from "@/utils/api";
 import {Character} from "@/utils/types";
-import {Input} from "@mui/material";
-import {useState} from "react";
+import {Grid, Input, Pagination} from "@mui/material";
+import {useEffect, useRef, useState} from "react";
 
 interface CharacterGridProps {
 	characters: Character[] | null;
 }
 
 export function CharacterGrid({characters}: CharacterGridProps) {
-	const [searchText, setSearchText] = useState("");
+	console.log(characters);
+	const [searchText, setSearchText] = useState<string>("");
+	const [debouncedSearchText, setDebouncedSearchText] = useState<string>("");
+	const [page, setPage] = useState<number>(1);
+	const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+	const [filteredCharacters, filterCharacterList] = useState<Character[] | null>(characters);
 
-	/*  const searchFilter = (filteredCharacters: any) => {
-        return filteredCharacters.filter(
-            (character: any) => character.name.toLowerCase().includes(searchText.toLowerCase())
-        )
-    } */
+	useEffect(() => {
+		if (debounceTimeoutRef.current) {
+			clearTimeout(debounceTimeoutRef.current);
+		}
 
-	// save the filtered array of objects
-	// const filteredCharacters = searchFilter(characters);
+		debounceTimeoutRef.current = setTimeout(() => {
+			setDebouncedSearchText(searchText);
+		}, 500); // delay in ms
 
-	// show the filtered array to user
+		return () => {
+			if (debounceTimeoutRef.current) {
+				clearTimeout(debounceTimeoutRef.current);
+			}
+		};
+	}, [searchText]);
+
+	useEffect(() => {
+		const fetch = async () => {
+			const characters = await fetchCharacters(page, debouncedSearchText);
+			filterCharacterList(characters);
+		};
+
+		fetch();
+	}, [page, debouncedSearchText]);
 
 	return (
 		<div>
@@ -34,15 +54,27 @@ export function CharacterGrid({characters}: CharacterGridProps) {
 					onChange={(e) => setSearchText(e.target.value)}
 				/>
 			</div>
-			{characters?.map((character) => (
-				<div key={character.id} className="flex items-center gap-4">
-					<img src={character.image} alt={character.name} className="w-16 h-16 rounded-full" />
-					<div>
-						<h3>{character.name}</h3>
-						<p>{character.species}</p>
-					</div>
-				</div>
-			))}
+			<Grid container spacing={2}>
+				{filteredCharacters?.map((character) => (
+					<Grid item xs={12} sm={6} md={4} lg={3} key={character.id}>
+						<div key={character.id} className="flex items-center gap-4">
+							<img src={character.image} alt={character.name} className="w-16 h-16 rounded-full" />
+							<div>
+								<h3>{character.name}</h3>
+								<p>{character.species}</p>
+							</div>
+						</div>
+					</Grid>
+				))}
+			</Grid>
+			<Pagination
+				count={10} // Replace with total number of pages
+				page={page}
+				onChange={(event, value) => {
+                    console.log(value);
+                    setPage(value)
+                }}
+			/>
 		</div>
 	);
 }
