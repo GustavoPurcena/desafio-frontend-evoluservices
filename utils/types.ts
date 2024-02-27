@@ -36,3 +36,7 @@ export type CharacterGridProps = {
 export type CharacterCardProps = {
 	character: Character;
 };
+
+export type SearchInputProps = {
+	onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+};

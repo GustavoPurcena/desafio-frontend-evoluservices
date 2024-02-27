@@ -36,7 +36,6 @@ export const fetchCharacterById = async (id: number): Promise<Character> => {
 		const response = await axios.get(`${BASE_URL}/character/${id}`);
 		return response.data;
 	} catch (error) {
-		console.log(error);
 		throw error;
 	}
 };
