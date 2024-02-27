@@ -4,6 +4,7 @@ import {Character, CharacterGridProps} from "@/utils/types";
 import {Box, CircularProgress, Grid, Input, Pagination, Typography} from "@mui/material";
 import {useEffect, useRef, useState} from "react";
 import CharacterCard from "../molecules/character-card";
+import SearchInput from "../atoms/search-input";
 
 export function CharacterGrid({characterList}: CharacterGridProps) {
 	const isInitialMount = useRef(true);
@@ -14,7 +15,15 @@ export function CharacterGrid({characterList}: CharacterGridProps) {
 	const [pageCount, setPageCount] = useState<number>(characterList?.info.pages);
 	const [filteredCharacters, filterCharacterList] = useState<Character[] | null>(characterList?.results);
 
-	console.log(characterList);
+	const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value;
+		if (debounceTimeoutRef.current) {
+			clearTimeout(debounceTimeoutRef.current);
+		}
+		debounceTimeoutRef.current = setTimeout(() => {
+			setDebouncedSearchText(value);
+		}, 600); // delay in ms to wait for user to stop typing
+	};
 
 	useEffect(() => {
 		if (isInitialMount.current) {
@@ -23,7 +32,6 @@ export function CharacterGrid({characterList}: CharacterGridProps) {
 		}
 
 		const fetch = async () => {
-			console.log(page, debouncedSearchText);
 			setIsLoading(true);
 			const {
 				results: characters,
@@ -47,25 +55,10 @@ export function CharacterGrid({characterList}: CharacterGridProps) {
 					</Typography>
 				</Grid>
 				<Grid item width={300}>
-					<Input
-						type="text"
-						autoComplete="off"
-						id="characterName"
-						placeholder="Rick, Morty, etc."
-						onChange={(e) => {
-							const value = e.target.value;
-							if (debounceTimeoutRef.current) {
-								clearTimeout(debounceTimeoutRef.current);
-							}
-							debounceTimeoutRef.current = setTimeout(() => {
-								setDebouncedSearchText(value);
-							}, 600); // delay in ms to wait for user to stop typing
-						}}
-						fullWidth
-					/>
+					<SearchInput onChange={handleSearch} />
 				</Grid>
 			</Grid>
-			
+
 			<Grid container spacing={2}>
 				{isLoading ? (
 					<Grid item xs={12} className="flex justify-center">
